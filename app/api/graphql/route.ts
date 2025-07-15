@@ -1,4 +1,3 @@
-// app/api/graphql/route.ts
 import { createYoga, createSchema } from "graphql-yoga";
 import { typeDefs } from "./schema";
 import { resolvers } from "./resolvers";
@@ -21,4 +20,10 @@ const yoga = createYoga<{
   fetchAPI: { Request, Response, Headers },
 });
 
-export { yoga as GET, yoga as POST };
+export async function GET(request: NextRequest) {
+  return yoga.fetch(request);
+}
+
+export async function POST(request: NextRequest) {
+  return yoga.fetch(request);
+}
