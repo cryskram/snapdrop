@@ -1,9 +1,12 @@
 "use client";
 
-import client from "@/lib/apollo";
-import { ApolloProvider } from "@apollo/client";
-import { ThemeProvider } from "next-themes";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { Toaster } from "react-hot-toast";
+
+const client = new ApolloClient({
+  uri: "/api/graphql",
+  cache: new InMemoryCache(),
+});
 
 export function Provider({ children }: { children: React.ReactNode }) {
   return (

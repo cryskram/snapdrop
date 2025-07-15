@@ -1,8 +1,24 @@
-import { ApolloServer } from "@apollo/server";
-import { resolvers } from "./resolvers";
+// app/api/graphql/route.ts
+import { createYoga, createSchema } from "graphql-yoga";
 import { typeDefs } from "./schema";
-import { startServerAndCreateNextHandler } from "@as-integrations/next";
+import { resolvers } from "./resolvers";
+import { NextRequest } from "next/server";
 
-const server = new ApolloServer({ typeDefs, resolvers });
-const handler = startServerAndCreateNextHandler(server);
-export { handler as GET, handler as POST };
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const yoga = createYoga<{
+  req: NextRequest;
+}>({
+  schema: createSchema({
+    typeDefs,
+    resolvers,
+  }),
+  graphqlEndpoint: "/api/graphql",
+  fetchAPI: { Request, Response, Headers },
+});
+
+export { yoga as GET, yoga as POST };
