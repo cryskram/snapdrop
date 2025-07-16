@@ -1,16 +1,43 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 
+const SAVE_NOTE = gql`
+  mutation SaveNote($slug: String!, $content: String!, $password: String) {
+    saveNote(slug: $slug, content: $content, password: $password) {
+      updatedAt
+    }
+  }
+`;
+
 export default function HomePage() {
   const router = useRouter();
   const [slug, setSlug] = useState("");
+  const [pass, setPass] = useState("");
+  const [isPass, setIsPass] = useState(false);
+  const [saveNote] = useMutation(SAVE_NOTE);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (slug.trim()) router.push(`/${slug.trim()}`);
+    const newSlug = slug.trim();
+    if (!newSlug) return;
+
+    try {
+      await saveNote({
+        variables: {
+          slug: newSlug,
+          password: isPass ? pass : "",
+          content: "",
+        },
+      });
+
+      router.push(`/${newSlug}`);
+    } catch (e) {
+      console.error("Error creating note:", e);
+    }
   };
 
   return (
@@ -38,7 +65,24 @@ export default function HomePage() {
                 className="w-full border-0 border-b-2 border-gray-300 focus:border-blue-500 bg-transparent text-lg placeholder-gray-400 focus:outline-none transition duration-300 pb-2"
                 aria-label="Note slug"
               />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-focus-within:w-full"></span>
+              <label className="inline-flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  checked={isPass}
+                  onChange={(e) => setIsPass(e.target.checked)}
+                />
+                Password Protected
+              </label>
+
+              {isPass && (
+                <input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full border-0 border-b-2 border-gray-300 focus:border-blue-500 bg-transparent text-lg placeholder-gray-400 focus:outline-none transition duration-300 pb-2 mt-4"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                />
+              )}
             </div>
 
             <button

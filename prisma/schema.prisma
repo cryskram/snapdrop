@@ -13,5 +13,6 @@ model Note {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   slug      String   @unique
   content   String
+  password  String?
   updatedAt DateTime @updatedAt
 }

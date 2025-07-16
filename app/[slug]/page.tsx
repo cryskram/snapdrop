@@ -8,14 +8,15 @@ import toast from "react-hot-toast";
 const GET_NOTE = gql`
   query GetNote($slug: String!) {
     getNote(slug: $slug) {
+      password
       content
     }
   }
 `;
 
 const SAVE_NOTE = gql`
-  mutation SaveNote($slug: String!, $content: String!) {
-    saveNote(slug: $slug, content: $content) {
+  mutation SaveNote($slug: String!, $content: String!, $password: String) {
+    saveNote(slug: $slug, content: $content, password: $password) {
       updatedAt
     }
   }
@@ -23,16 +24,29 @@ const SAVE_NOTE = gql`
 
 const NotePage = () => {
   const { slug } = useParams();
-  const { data } = useQuery(GET_NOTE, { variables: { slug } });
+  const { data, loading } = useQuery(GET_NOTE, { variables: { slug } });
   const [saveNote] = useMutation(SAVE_NOTE);
   const [content, setContent] = useState("");
+  const [passProtect, setPassProtect] = useState("");
+  const [userPass, setUserPass] = useState("");
+  const [unlock, setUnlock] = useState(false);
 
   const toastIdRef = useRef<string | undefined>(undefined);
 
   const debouncedSave = useRef(
     debounce(async (value: string) => {
       try {
-        await saveNote({ variables: { slug, content: value } });
+        const variables: Record<string, any> = {
+          slug,
+          content: value,
+        };
+
+        if (passProtect) {
+          variables.password = passProtect;
+        }
+
+        await saveNote({ variables });
+
         if (toastIdRef.current) {
           toast.success("Note saved!", { id: toastIdRef.current });
           toastIdRef.current = undefined;
@@ -53,8 +67,15 @@ const NotePage = () => {
   }, []);
 
   useEffect(() => {
-    if (data?.getNote?.content) {
-      setContent(data.getNote.content);
+    const note = data?.getNote;
+
+    if (!note) return;
+
+    setPassProtect(note.password ?? "");
+
+    if (!note.password) {
+      setUnlock(true);
+      setContent(note.content || "");
     }
   }, [data]);
 
@@ -69,17 +90,47 @@ const NotePage = () => {
     debouncedSave(newContent);
   };
 
+  const handlePassword = () => {
+    if (userPass === passProtect) {
+      setUnlock(true);
+      setContent(data?.getNote?.content || "");
+    } else {
+      toast.error("Incorrect Password");
+    }
+  };
+
+  if (loading) return <p className="p-8">Loading...</p>;
+
   return (
     <div className="min-h-screen p-8 bg-gray-50 transition-colors">
       <h1 className="text-2xl font-semibold mb-4 text-gray-800">
         /snapnote/{slug}
       </h1>
-      <textarea
-        value={content}
-        onChange={handleChange}
-        placeholder="Start typing your note..."
-        className="w-full h-[70vh] p-4 rounded-xl bg-white border border-gray-300 text-lg shadow-2xl text-black "
-      />
+      {!unlock && data?.getNote?.password ? (
+        <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-xl border border-gray-200">
+          <p className="mb-4 text-gray-700">This note is password protected.</p>
+          <input
+            type="password"
+            placeholder="Enter password"
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none"
+            value={userPass}
+            onChange={(e) => setUserPass(e.target.value)}
+          />
+          <button
+            onClick={handlePassword}
+            className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-150"
+          >
+            Unlock
+          </button>
+        </div>
+      ) : (
+        <textarea
+          value={content}
+          onChange={handleChange}
+          placeholder="Start typing your note..."
+          className="w-full h-[70vh] p-4 rounded-xl bg-white border border-gray-300 text-lg focus:outline-none shadow-2xl text-black "
+        />
+      )}
     </div>
   );
 };

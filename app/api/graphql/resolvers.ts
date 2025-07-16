@@ -14,12 +14,43 @@ export const resolvers = {
   Mutation: {
     saveNote: async (
       _: any,
-      { slug, content }: { slug: string; content: string }
+      {
+        slug,
+        content,
+        password,
+      }: { slug: string; content: string; password?: string }
     ) => {
-      return await prisma.note.upsert({
-        where: { slug: slug },
-        create: { slug: slug, content: content },
-        update: { content },
+      // const exist = await prisma.note.findUnique({ where: { slug } });
+
+      // if (exist) {
+      //   return await prisma.note.update({
+      //     where: { slug },
+      //     data: {
+      //       content,
+      //       ...(password !== undefined ? { password } : {}),
+      //     },
+      //   });
+      // } else {
+      //   return await prisma.note.create({
+      //     data: {
+      //       slug,
+      //       content,
+      //       password: password ?? "",
+      //     },
+      //   });
+      // }
+
+      return prisma.note.upsert({
+        where: { slug },
+        create: {
+          slug,
+          content,
+          password: password ?? "",
+        },
+        update: {
+          content,
+          ...(password !== undefined ? { password } : {}),
+        },
       });
     },
   },

@@ -5,6 +5,7 @@ export const typeDefs = gql`
     id: ID!
     slug: String!
     content: String!
+    password: String
     updatedAt: String!
   }
 
@@ -13,6 +14,6 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    saveNote(slug: String!, content: String!): Note!
+    saveNote(slug: String!, content: String!, password: String): Note!
   }
 `;
