@@ -30,7 +30,7 @@ const yoga = createYoga<{
       throw new Error("Unauthorized origin");
     }
 
-    const token = request.headers.get("x-api-key");
+    const token = request.headers.get("X-API-Key");
     const expectedToken = process.env.API_SECRET;
 
     if (expectedToken && token !== expectedToken) {
