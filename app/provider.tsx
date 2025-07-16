@@ -5,6 +5,9 @@ import { Toaster } from "react-hot-toast";
 
 const client = new ApolloClient({
   uri: "/api/graphql",
+  headers: {
+    "x-api-key": process.env.NEXT_PUBLIC_API_KEY as string,
+  },
   cache: new InMemoryCache(),
 });
 

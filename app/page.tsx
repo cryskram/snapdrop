@@ -62,7 +62,7 @@ export default function HomePage() {
                 Drop
               </span>
             </h1>
-            <p className="text-lg text-gray-600 max-w-md mx-auto mt-4">
+            <p className="text-base md:text-lg text-gray-600 max-w-md mx-auto mt-4">
               Create and share quick notes... no sign-ups, just a link away.
             </p>
           </div>
