@@ -17,6 +17,7 @@ const yoga = createYoga<{
     resolvers,
   }),
   graphqlEndpoint: "/api/graphql",
+  graphiql: process.env.NODE_ENV === "development",
   fetchAPI: { Request, Response, Headers },
   context: async ({ request }) => {
     const origin = request.headers.get("origin");
