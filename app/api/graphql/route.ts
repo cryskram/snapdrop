@@ -18,8 +18,9 @@ const yoga = createYoga<{
   }),
   graphqlEndpoint: "/api/graphql",
   fetchAPI: { Request, Response, Headers },
-  context: async ({ req }) => {
-    const origin = req.headers.get("origin");
+  context: async ({ request }) => {
+    const origin = request.headers.get("origin");
+
     const allowedOrigins = [
       "http://localhost:3000",
       "https://snapdropweb.vercel.app",
@@ -29,14 +30,18 @@ const yoga = createYoga<{
       throw new Error("Unauthorized origin");
     }
 
-    const token = req.headers.get("x-api-key");
+    const token = request.headers.get("x-api-key");
     const expectedToken = process.env.API_SECRET;
 
     if (expectedToken && token !== expectedToken) {
-      throw new Error("Invalid API key");
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Invalid API key");
+      } else {
+        console.warn("Skipping API key check in dev");
+      }
     }
 
-    return { req };
+    return { request };
   },
 });
 

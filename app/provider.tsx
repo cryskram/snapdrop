@@ -1,15 +1,8 @@
 "use client";
 
+import client from "@/lib/apollo";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { Toaster } from "react-hot-toast";
-
-const client = new ApolloClient({
-  uri: "/api/graphql",
-  headers: {
-    "x-api-key": process.env.NEXT_PUBLIC_API_KEY as string,
-  },
-  cache: new InMemoryCache(),
-});
 
 export function Provider({ children }: { children: React.ReactNode }) {
   return (
