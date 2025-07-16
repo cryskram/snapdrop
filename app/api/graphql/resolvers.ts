@@ -9,6 +9,10 @@ export const resolvers = {
         },
       });
     },
+
+    getNotes: async (_: any) => {
+      return await prisma.note.findMany();
+    },
   },
 
   Mutation: {
@@ -20,38 +24,42 @@ export const resolvers = {
         password,
       }: { slug: string; content: string; password?: string }
     ) => {
-      // const exist = await prisma.note.findUnique({ where: { slug } });
+      // return prisma.note.upsert({
+      //   where: { slug },
+      //   create: {
+      //     slug,
+      //     content,
+      //     password: password ?? "",
+      //   },
+      //   update: {
+      //     content,
+      //     ...(password !== undefined ? { password } : {}),
+      //   },
+      // });
 
-      // if (exist) {
-      //   return await prisma.note.update({
-      //     where: { slug },
-      //     data: {
-      //       content,
-      //       ...(password !== undefined ? { password } : {}),
-      //     },
-      //   });
-      // } else {
-      //   return await prisma.note.create({
-      //     data: {
-      //       slug,
-      //       content,
-      //       password: password ?? "",
-      //     },
-      //   });
-      // }
+      const exist = await prisma.note.findUnique({ where: { slug } });
 
-      return prisma.note.upsert({
-        where: { slug },
-        create: {
-          slug,
-          content,
-          password: password ?? "",
-        },
-        update: {
-          content,
-          ...(password !== undefined ? { password } : {}),
-        },
-      });
+      if (exist) {
+        if (content === "") {
+          return exist;
+        }
+
+        return await prisma.note.update({
+          where: { slug },
+          data: {
+            content,
+            ...(password !== undefined ? { password } : {}),
+          },
+        });
+      } else {
+        return await prisma.note.create({
+          data: {
+            slug,
+            content,
+            password: password ?? "",
+          },
+        });
+      }
     },
   },
 };

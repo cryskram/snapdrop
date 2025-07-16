@@ -11,6 +11,7 @@ export const typeDefs = gql`
 
   type Query {
     getNote(slug: String!): Note
+    getNotes: [Note!]!
   }
 
   type Mutation {

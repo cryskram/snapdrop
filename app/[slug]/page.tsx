@@ -24,7 +24,10 @@ const SAVE_NOTE = gql`
 
 const NotePage = () => {
   const { slug } = useParams();
-  const { data, loading } = useQuery(GET_NOTE, { variables: { slug } });
+  const { data, loading } = useQuery(GET_NOTE, {
+    variables: { slug },
+    fetchPolicy: "network-only",
+  });
   const [saveNote] = useMutation(SAVE_NOTE);
   const [content, setContent] = useState("");
   const [passProtect, setPassProtect] = useState("");
@@ -67,19 +70,20 @@ const NotePage = () => {
   }, []);
 
   useEffect(() => {
-    const note = data?.getNote;
+    if (!data?.getNote) return;
 
-    if (!note) return;
+    const { password, content } = data.getNote;
 
-    setPassProtect(note.password ?? "");
-
-    if (!note.password) {
+    setPassProtect(password ?? "");
+    if (!password) {
       setUnlock(true);
-      setContent(note.content || "");
+      setContent(content || "");
     }
   }, [data]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!unlock) return;
+
     const newContent = e.target.value;
     setContent(newContent);
 

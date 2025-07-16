@@ -1,9 +1,15 @@
 "use client";
 
-import { gql, useMutation } from "@apollo/client";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
+
+const GET_NOTE = gql`
+  query GetNote($slug: String!) {
+    slug
+  }
+`;
 
 const SAVE_NOTE = gql`
   mutation SaveNote($slug: String!, $content: String!, $password: String) {
@@ -19,6 +25,7 @@ export default function HomePage() {
   const [pass, setPass] = useState("");
   const [isPass, setIsPass] = useState(false);
   const [saveNote] = useMutation(SAVE_NOTE);
+  const [getNote] = useLazyQuery(GET_NOTE);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +33,17 @@ export default function HomePage() {
     if (!newSlug) return;
 
     try {
-      await saveNote({
-        variables: {
-          slug: newSlug,
-          password: isPass ? pass : "",
-          content: "",
-        },
-      });
+      const { data } = await getNote({ variables: { slug: newSlug } });
+
+      if (!data?.getNote) {
+        await saveNote({
+          variables: {
+            slug: newSlug,
+            password: isPass ? pass : "",
+            content: "",
+          },
+        });
+      }
 
       router.push(`/${newSlug}`);
     } catch (e) {
